@@ -7,6 +7,11 @@
   },
   "author": "roger",
   "license": "GPL",
+  "jshintConfig": {
+    "node": true,
+    "browser": true,
+    "newcap" : false
+  },
   "dependencies": {
     "delta-pouch": "^0.1.7",
     "material-ui": "^0.7.1",
