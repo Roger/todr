@@ -1,10 +1,14 @@
 var React = require('react/addons');
 var Morearty = require('morearty');
 var ROM = React.DOM;
-var Input = React.createFactory(Morearty.DOM.input);
+
+var mui = require('material-ui');
+var FlatButton = React.createFactory(mui.FlatButton);
+
+var Input = React.createFactory(require('./input'));
+
 var stores = require('./stores');
 var actions = stores.actions;
-
 
 var Item = React.createClass({
   displayName: 'Item',
@@ -13,9 +17,7 @@ var Item = React.createClass({
     var ctx = this.getMoreartyContext();
 
     if(this.props.selected) {
-      var dom = this.refs.input.getDOMNode();
-      dom.focus();
-      dom.setSelectionRange(dom.value.length, dom.value.length);
+      this.refs.input.focus();
     }
   },
   componentDidMount: function() {
@@ -72,14 +74,20 @@ var Item = React.createClass({
     var binding = this.getDefaultBinding();
     var item = binding.get();
 
-    return Input({
-      ref: "input",
-      onPaste: this.onPaste,
-      onFocus: this.onFocus,
-      onKeyDown: this.onKeyDown,
-      onChange: Morearty.Callback.set(binding, 'val'),
-      value: item.get("val")
-    });
+    return ROM.div(null, [
+      // mui.Checkbox(),
+      Input({
+        key: "input",
+        ref: "input",
+        className: "task-input",
+        hintText: "Add some task..",
+        onPaste: this.onPaste,
+        onFocus: this.onFocus,
+        onKeyDown: this.onKeyDown,
+        onChange: Morearty.Callback.set(binding, 'val'),
+        value: item.get("val")
+      })
+    ]);
   }
 });
 var ItemFactory = React.createFactory(Item);
@@ -110,7 +118,7 @@ var List = React.createClass({
     }.bind(this));
     return ROM.div(null, [
       ROM.ul({key: "list"}, list.toArray()),
-      ROM.a({key: "link", href: "#", onClick: this.onAdd}, "Add new task!")
+      FlatButton({key: "link", label: "Add New Task", onClick: this.onAdd})
     ]);
   }
 });
