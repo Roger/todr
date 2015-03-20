@@ -56,7 +56,7 @@ var ItemsStore = Reflux.createStore({
     if(last) {
       selectedIdx = this.itemsBinding.get().count();
     } else {
-      var selected = this.rootBinding.get("selected")
+      var selected = this.rootBinding.get("selected");
       selectedIdx = this.findIndex(selected);
     }
 
@@ -111,7 +111,7 @@ var ItemsStore = Reflux.createStore({
     this.onMove(id, item.get("id"));
   },
   onNext: function() {
-    var selected = this.rootBinding.get("selected")
+    var selected = this.rootBinding.get("selected");
     var selectedIdx = this.findIndex(selected);
     // Loop
     if(this.itemsBinding.get().count() === selectedIdx + 1)
@@ -120,7 +120,7 @@ var ItemsStore = Reflux.createStore({
     this.rootBinding.set('selected', newSelected.get('id'));
   },
   onPrev: function() {
-    var selected = this.rootBinding.get("selected")
+    var selected = this.rootBinding.get("selected");
     var selectedIdx = this.findIndex(selected);
     var newSelected = this.itemsBinding.get(selectedIdx - 1);
     this.rootBinding.set('selected', newSelected.get('id'));

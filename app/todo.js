@@ -90,7 +90,10 @@ var Item = React.createClass({
       event.preventDefault();
     } else if(key === "Backspace" || key === "Delete") {
       if(item.get("val") === "") {
-        key === "Backspace" ? actions.prev() : actions.next();
+        if(key === "Backspace")
+          actions.prev();
+        else
+          actions.next();
         actions.remove(item.get("id"));
       }
     }

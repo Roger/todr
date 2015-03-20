@@ -18,12 +18,12 @@ var History = React.createClass({
 
     return ROM.div(null, [
       ROM.a({key: "undo", href:"#", onClick: function() {
-        Morearty.History.undo(binding)}
-      }, "Undo"),
+        Morearty.History.undo(binding);
+      }}, "Undo"),
       " - ",
       ROM.a({key: "redo", href: "#", onClick: function() {
-        Morearty.History.redo(binding)}
-      }, "Redo")
+        Morearty.History.redo(binding);
+      }}, "Redo")
     ]);
   }
 });
