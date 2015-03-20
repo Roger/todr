@@ -30,6 +30,8 @@ var ItemsActions = Reflux.createActions([
   'remove',
   'select',
   'move',
+  'sortUp',
+  'sortDown',
   'next',
   'prev'
 ]);
@@ -93,6 +95,20 @@ var ItemsStore = Reflux.createStore({
       return items.splice(index, 1)
                   .splice(afterIndex, 0, item.get());
     });
+  },
+  onSortUp: function(id) {
+    var index = this.findIndex(id);
+    if(index === 0)
+      index = this.itemsBinding.get().count();
+    var item = this.itemsBinding.get(index - 1);
+    this.onMove(id, item.get("id"));
+  },
+  onSortDown: function(id) {
+    var index = this.findIndex(id);
+    if(index === this.itemsBinding.get().count() - 1)
+      index = -1;
+    var item = this.itemsBinding.get(index + 1);
+    this.onMove(id, item.get("id"));
   },
   onNext: function() {
     var selected = this.rootBinding.get("selected")

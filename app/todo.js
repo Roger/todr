@@ -67,18 +67,28 @@ var Item = React.createClass({
   },
   onKeyDown: function(event) {
     var key = event.key;
+    var shift = event.shiftKey;
+
+    var binding = this.getDefaultBinding();
+    var item = binding.get();
+
     if(key === "Enter") {
       actions.add("");
     } else if(key === "ArrowUp") {
-      actions.prev();
+      if(shift) {
+        actions.sortUp(item.get("id"));
+      } else {
+        actions.prev();
+      }
       event.preventDefault();
     } else if(key === "ArrowDown") {
-      actions.next();
+      if(shift) {
+        actions.sortDown(item.get("id"));
+      } else {
+        actions.next();
+      }
       event.preventDefault();
     } else if(key === "Backspace" || key === "Delete") {
-      var binding = this.getDefaultBinding();
-      var item = binding.get();
-
       if(item.get("val") === "") {
         key === "Backspace" ? actions.prev() : actions.next();
         actions.remove(item.get("id"));
