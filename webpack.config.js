@@ -5,7 +5,8 @@ var config = {
   // specify that react should be part of that chunk
   entry: {
     app: ['./app/main.js'],
-    vendors: ['react']
+    vendors: ['react', 'material-ui', 'morearty', 'node-uuid', 'reflux',
+              'react-tap-event-plugin', 'pouchdb', 'delta-pouch', 'immutable']
   },
   resolve: { alias: {} },
   
