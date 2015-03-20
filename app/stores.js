@@ -29,6 +29,7 @@ var ItemsActions = Reflux.createActions([
   'update',
   'remove',
   'select',
+  'move',
   'next',
   'prev'
 ]);
@@ -82,6 +83,16 @@ var ItemsStore = Reflux.createStore({
 
   onSelect: function(id) {
     this.rootBinding.set('selected', id);
+  },
+  onMove: function(id, afterID) {
+    var index = this.findIndex(id);
+    var item = this.itemsBinding.sub(index);
+    var afterIndex = this.findIndex(afterID);
+
+    this.itemsBinding.update(function (items) {
+      return items.splice(index, 1)
+                  .splice(afterIndex, 0, item.get());
+    });
   },
   onNext: function() {
     var selected = this.rootBinding.get("selected")

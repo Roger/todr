@@ -6,7 +6,8 @@ var config = {
   entry: {
     app: ['./app/main.js'],
     vendors: ['react', 'material-ui', 'morearty', 'node-uuid', 'reflux',
-              'react-tap-event-plugin', 'pouchdb', 'delta-pouch', 'immutable']
+              'react-tap-event-plugin', 'pouchdb', 'delta-pouch', 'immutable',
+              'react-dnd']
   },
   resolve: { alias: {} },
   

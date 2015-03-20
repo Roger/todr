@@ -4,6 +4,9 @@ var React = require('react/addons');
 var Morearty = require('morearty');
 var ROM = React.DOM;
 
+var sortTypes = require('./sortTypes');
+var DragDropMixin = require('react-dnd').DragDropMixin;
+
 var mui = require('material-ui');
 var FlatButton = React.createFactory(mui.FlatButton);
 
@@ -14,7 +17,33 @@ var actions = stores.actions;
 
 var Item = React.createClass({
   displayName: 'Item',
-  mixins: [Morearty.Mixin],
+  mixins: [DragDropMixin, Morearty.Mixin],
+  statics: {
+    configureDragDrop: function(register) {
+      register(sortTypes.todoItem, {
+        dragSource: {
+          beginDrag: function(component) {
+            var binding = component.getDefaultBinding();
+            var item = binding.get();
+
+            return {
+              item: {
+                id: item.get("id")
+              }
+            };
+          }
+        },
+        dropTarget: {
+          over: function(component, item) {
+            var binding = component.getDefaultBinding();
+            var componentItem = binding.get();
+            actions.move(componentItem.get("id"), item.id);
+          }
+        }
+      });
+    }
+  },
+
   focus: function() {
     var ctx = this.getMoreartyContext();
 
@@ -22,6 +51,7 @@ var Item = React.createClass({
       this.refs.input.focus();
     }
   },
+
   componentDidMount: function() {
     this.focus();
   },
@@ -76,7 +106,16 @@ var Item = React.createClass({
     var binding = this.getDefaultBinding();
     var item = binding.get();
 
-    return ROM.div(null, [
+    var dragProps = this.dragSourceFor(sortTypes.todoItem);
+    var dropProps = this.dropTargetFor(sortTypes.todoItem);
+    var isDragging = this.getDragState(sortTypes.todoItem).isDragging;
+    var props = Morearty.Util.assign({}, this.props, dropProps, dragProps, {
+      style: {
+        opacity: isDragging ? 0.1 : 1
+      }
+    });
+
+    return ROM.div(props, [
       // mui.Checkbox(),
       Input({
         key: "input",
