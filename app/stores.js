@@ -4,6 +4,7 @@ var React = require('react/addons');
 var Morearty = require('morearty');
 var Reflux = require('reflux');
 var Immutable = require('immutable');
+var PouchDB = require('pouchdb');
 var uuid = require('node-uuid');
 
 var NOW_SHOWING = Object.freeze({ALL: 'all', ACTIVE: 'active', COMPLETED: 'completed'});
@@ -11,7 +12,9 @@ var NOW_SHOWING = Object.freeze({ALL: 'all', ACTIVE: 'active', COMPLETED: 'compl
 var state = {
   selected: null,
   items: {},
-  sorting: []
+  sorting: {
+    order: []
+  }
 };
 
 var Ctx = Morearty.createContext({
@@ -42,9 +45,50 @@ var ItemsStore = Reflux.createStore({
   listenables: ItemsActions,
 
   init: function() {
+    this.db = new PouchDB('todr');
     this.rootBinding = this.getMoreartyContext().getBinding();
     this.itemsBinding = this.rootBinding.sub('items');
-    this.sortingBinding = this.rootBinding.sub('sorting');
+    this.sortingBinding = this.rootBinding.sub('sorting.order');
+    this.listenCouch();
+  },
+
+  updateDoc: function(doc) {
+    if(doc.doc_type === "item") {
+      this.itemsBinding.set(doc._id, Immutable.fromJS(doc));
+    } else if(doc.doc_type === "sorting") {
+      this.rootBinding.set("sorting", Immutable.fromJS(doc));
+    } else {
+      // console.log("ignored", doc);
+    }
+  },
+  listenCouch: function() {
+    var updateDoc = this.updateDoc;
+    var itemsBinding = this.itemsBinding;
+    var sortingBinding = this.itemsBinding;
+
+    // this.db.query("items/by_name", {include_docs: true}).then(function(resp) {
+    this.db.allDocs({include_docs: true}).then(function (resp) {
+      var rows = resp.rows;
+      rows.map(function(row) {
+        updateDoc(row.doc);
+      });
+
+      this._changes = this.db.changes({
+        // view: "products/by_name",
+        since: "now",
+        include_docs: true,
+        live: true
+      }).on('create', function(change) {
+        console.log("C", change);
+        updateDoc(change.doc);
+      }).on('update', function(change) {
+        console.log("U", change.doc);
+        updateDoc(change.doc);
+      }.bind(this)).on('delete', function(change) {
+        itemsBinding.delete(change.doc._id);
+      });
+
+    }.bind(this));
   },
 
   findIndex: function(id) {

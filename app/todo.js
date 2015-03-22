@@ -84,7 +84,7 @@ var Item = React.createClass({
       }
       event.preventDefault();
     } else if(key === "Backspace" || key === "Delete") {
-      if(item.get("val") === "") {
+      if(item.get("title") === "") {
         if(key === "Backspace")
           actions.prev();
         else
@@ -103,12 +103,16 @@ var Item = React.createClass({
     event.clipboardData.items[0].getAsString(function(string) {
       var strings = string.trim().split("\n");
       var first = strings.shift();
-      binding.set("val", binding.get("val") + first); 
+      actions.update(this.props.id, binding.get("title") + first);
       strings.map(function(val) {
         actions.add(val);
       });
     });
     event.preventDefault();
+  },
+  onChangeItem: function(event) {
+    var title = event.target.value;
+    actions.update(this.props.id, title);
   },
   render: function() {
     var binding = this.getDefaultBinding();
@@ -133,8 +137,8 @@ var Item = React.createClass({
         onPaste: this.onPaste,
         onFocus: this.onFocus,
         onKeyDown: this.onKeyDown,
-        onChange: Morearty.Callback.set(binding, 'val'),
-        value: item.get("val")
+        onChange: this.onChangeItem,
+        value: item.get("title")
       })
     ]);
   }
@@ -151,7 +155,7 @@ var List = React.createClass({
   render: function() {
     var binding = this.getDefaultBinding();
     var selected = binding.get('selected');
-    var sortingBinding = binding.sub('sorting');
+    var sortingBinding = binding.sub('sorting.order');
     var itemsBinding = binding.sub('items');
 
     var items = itemsBinding.get();
