@@ -23,21 +23,16 @@ var Item = React.createClass({
       register(sortTypes.todoItem, {
         dragSource: {
           beginDrag: function(component) {
-            var binding = component.getDefaultBinding();
-            var item = binding.get();
-
             return {
               item: {
-                id: item.get("id")
+                id: component.props.id
               }
             };
           }
         },
         dropTarget: {
           over: function(component, item) {
-            var binding = component.getDefaultBinding();
-            var componentItem = binding.get();
-            actions.move(componentItem.get("id"), item.id);
+            actions.move(component.props.id, item.id);
           }
         }
       });
@@ -76,14 +71,14 @@ var Item = React.createClass({
       actions.add("");
     } else if(key === "ArrowUp") {
       if(shift) {
-        actions.sortUp(item.get("id"));
+        actions.sortUp(this.props.id);
       } else {
         actions.prev();
       }
       event.preventDefault();
     } else if(key === "ArrowDown") {
       if(shift) {
-        actions.sortDown(item.get("id"));
+        actions.sortDown(this.props.id);
       } else {
         actions.next();
       }
@@ -94,13 +89,13 @@ var Item = React.createClass({
           actions.prev();
         else
           actions.next();
-        actions.remove(item.get("id"));
+        actions.remove(this.props.id);
       }
     }
   },
   onFocus: function(event) {
     var binding = this.getDefaultBinding();
-    actions.select(binding.get("id"));
+    actions.select(this.props.id);
   },
   onPaste: function(event) {
     var binding = this.getDefaultBinding();
@@ -156,14 +151,17 @@ var List = React.createClass({
   render: function() {
     var binding = this.getDefaultBinding();
     var selected = binding.get('selected');
+    var sortingBinding = binding.sub('sorting');
     var itemsBinding = binding.sub('items');
-    var items = itemsBinding.get();
 
-    var list = items.map(function(item, i) {
-      var itemBinding = itemsBinding.sub(i);
-      var id = item.get('id');
+    var items = itemsBinding.get();
+    var sorting = sortingBinding.get();
+
+    var list = sorting.map(function(id) {
+      var itemBinding = itemsBinding.sub(id);
 
       return ROM.li({key: id}, ItemFactory({
+        id: id,
         key: id,
         selected: selected === id,
         binding: itemBinding,

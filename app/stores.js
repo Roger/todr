@@ -10,7 +10,8 @@ var NOW_SHOWING = Object.freeze({ALL: 'all', ACTIVE: 'active', COMPLETED: 'compl
 
 var state = {
   selected: null,
-  items: []
+  items: {},
+  sorting: []
 };
 
 var Ctx = Morearty.createContext({
@@ -43,12 +44,11 @@ var ItemsStore = Reflux.createStore({
   init: function() {
     this.rootBinding = this.getMoreartyContext().getBinding();
     this.itemsBinding = this.rootBinding.sub('items');
+    this.sortingBinding = this.rootBinding.sub('sorting');
   },
 
   findIndex: function(id) {
-    return this.itemsBinding.get().findIndex(function(item) {
-      return item.get('id') === id;
-    });
+    return this.sortingBinding.get().indexOf(id);
   },
 
   onAdd: function (item, last) {
@@ -62,25 +62,30 @@ var ItemsStore = Reflux.createStore({
 
     var id = uuid.v4();
     this.itemsBinding.update(function (items) {
-      var newItem = Immutable.Map({id: id, val: item});
+      var newItem = Immutable.Map({val: item});
+      return items.set(id, newItem);
+    });
+
+    this.sortingBinding.update(function (sorting) {
       if(selectedIdx !== -1) {
-        return items.splice(selectedIdx+1, 0, newItem);
+        return sorting.splice(selectedIdx+1, 0, id);
       } else {
-        return items.push(newItem);
+        return sorting.push(id);
       }
     });
     this.rootBinding.set('selected', id);
   },
 
-  onUpdate: function (item) {
-    var itemIndex = this.findIndex(item.id);
-    this.itemsBinding.set(itemIndex, Immutable.Map(item));
+  onUpdate: function (id, item) {
+    this.itemsBinding.set(id, Immutable.Map(item));
   },
 
   onRemove: function (id) {
-    var itemIndex = this.findIndex(id);
-    var itemBinding = this.itemsBinding.sub(itemIndex);
-    this.itemsBinding.delete(itemIndex);
+    var sortingIndex = this.findIndex(id);
+    var itemBinding = this.itemsBinding.sub(sortingIndex);
+
+    this.itemsBinding.delete(id);
+    this.sortingBinding.delete(sortingIndex);
   },
 
   onSelect: function(id) {
@@ -88,27 +93,26 @@ var ItemsStore = Reflux.createStore({
   },
   onMove: function(id, afterID) {
     var index = this.findIndex(id);
-    var item = this.itemsBinding.sub(index);
     var afterIndex = this.findIndex(afterID);
 
-    this.itemsBinding.update(function (items) {
-      return items.splice(index, 1)
-                  .splice(afterIndex, 0, item.get());
+    this.sortingBinding.update(function (sorting) {
+      return sorting.splice(index, 1)
+                    .splice(afterIndex, 0, id);
     });
   },
   onSortUp: function(id) {
     var index = this.findIndex(id);
     if(index === 0)
-      index = this.itemsBinding.get().count();
-    var item = this.itemsBinding.get(index - 1);
-    this.onMove(id, item.get("id"));
+      index = this.sortingBinding.get().count();
+    var afterID = this.sortingBinding.get(index - 1);
+    this.onMove(id, afterID);
   },
   onSortDown: function(id) {
     var index = this.findIndex(id);
-    if(index === this.itemsBinding.get().count() - 1)
+    if(index === this.sortingBinding.get().count() - 1)
       index = -1;
-    var item = this.itemsBinding.get(index + 1);
-    this.onMove(id, item.get("id"));
+    var afterID = this.sortingBinding.get(index + 1);
+    this.onMove(id, afterID);
   },
   onNext: function() {
     var selected = this.rootBinding.get("selected");
@@ -116,14 +120,14 @@ var ItemsStore = Reflux.createStore({
     // Loop
     if(this.itemsBinding.get().count() === selectedIdx + 1)
       selectedIdx = -1;
-    var newSelected = this.itemsBinding.get(selectedIdx + 1);
-    this.rootBinding.set('selected', newSelected.get('id'));
+    var newSelected = this.sortingBinding.get(selectedIdx + 1);
+    this.rootBinding.set('selected', newSelected);
   },
   onPrev: function() {
     var selected = this.rootBinding.get("selected");
     var selectedIdx = this.findIndex(selected);
-    var newSelected = this.itemsBinding.get(selectedIdx - 1);
-    this.rootBinding.set('selected', newSelected.get('id'));
+    var newSelected = this.sortingBinding.get(selectedIdx - 1);
+    this.rootBinding.set('selected', newSelected);
   }
 });
 
