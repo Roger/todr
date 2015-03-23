@@ -11,6 +11,7 @@ var mui = require('material-ui');
 var FlatButton = React.createFactory(mui.FlatButton);
 
 var Input = React.createFactory(require('./input'));
+// var Input = React.createFactory(Morearty.DOM.input);
 
 var stores = require('./stores');
 var actions = stores.actions;
@@ -84,7 +85,7 @@ var Item = React.createClass({
       }
       event.preventDefault();
     } else if(key === "Backspace" || key === "Delete") {
-      if(item.get("title") === "") {
+      if(!item || item.get("title") === "") {
         if(key === "Backspace")
           actions.prev();
         else
@@ -138,7 +139,7 @@ var Item = React.createClass({
         onFocus: this.onFocus,
         onKeyDown: this.onKeyDown,
         onChange: this.onChangeItem,
-        value: item.get("title")
+        value: item ? item.get("title") : ""
       })
     ]);
   }
